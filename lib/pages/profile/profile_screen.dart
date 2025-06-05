@@ -33,7 +33,7 @@ class ProfileScreen extends StatelessWidget {
             // Yes, End Session button matching design
             ElevatedButton(
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.teal, // Button color
+                backgroundColor: const Color(0xFF3ACBAB), // Button color
                 foregroundColor: Colors.white, // Text color
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(8.0),
@@ -62,7 +62,7 @@ class ProfileScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'), // Updated AppBar title
-        backgroundColor: Colors.teal, // Consistent AppBar color
+        backgroundColor: const Color(0xFF3ACBAB), // Consistent AppBar color
         automaticallyImplyLeading: false, // Hide back button on main screens
       ),
       body: ListView(
@@ -81,7 +81,9 @@ class ProfileScreen extends StatelessWidget {
                   // User icon and text
                   CircleAvatar(
                     radius: 30, // Adjust size
-                    backgroundColor: Colors.teal, // Icon background color
+                    backgroundColor: const Color(
+                      0xFF3ACBAB,
+                    ), // Icon background color
                     child: Icon(
                       Icons.person,
                       color: Colors.white,
@@ -123,7 +125,10 @@ class ProfileScreen extends StatelessWidget {
               children: [
                 // List of options
                 ListTile(
-                  leading: Icon(Icons.edit, color: Colors.teal), // Icon
+                  leading: Icon(
+                    Icons.edit,
+                    color: const Color(0xFF3ACBAB),
+                  ), // Icon
                   title: const Text('Edit Profile'), // Label
                   trailing: Icon(
                     Icons.arrow_forward_ios,
@@ -136,7 +141,10 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const Divider(indent: 16, endIndent: 16), // Divider
                 ListTile(
-                  leading: Icon(Icons.settings, color: Colors.teal), // Icon
+                  leading: Icon(
+                    Icons.settings,
+                    color: const Color(0xFF3ACBAB),
+                  ), // Icon
                   title: const Text('Setting'), // Label
                   trailing: Icon(
                     Icons.arrow_forward_ios,
@@ -167,7 +175,10 @@ class ProfileScreen extends StatelessWidget {
                 ),
                 const Divider(indent: 16, endIndent: 16), // Divider
                 ListTile(
-                  leading: Icon(Icons.help_outline, color: Colors.teal), // Icon
+                  leading: Icon(
+                    Icons.help_outline,
+                    color: const Color(0xFF3ACBAB),
+                  ), // Icon
                   title: const Text('Help'), // Label
                   trailing: Icon(
                     Icons.arrow_forward_ios,

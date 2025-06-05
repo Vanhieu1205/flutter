@@ -1,11 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:table_calendar/table_calendar.dart';
 import '../../viewmodels/income_viewmodel.dart';
 import '../../viewmodels/expense_viewmodel.dart';
 import 'daily_analytics_view.dart'; // Import view phân tích theo ngày
 import 'weekly_analytics_view.dart'; // Import view phân tích theo tuần
 import 'monthly_analytics_view.dart'; // Import view phân tích theo tháng
 import 'yearly_analytics_view.dart'; // Import view phân tích theo năm
+
+class CalendarButton extends StatelessWidget {
+  final DateTime selectedDate;
+  final Function(DateTime) onDateSelected;
+  final CalendarFormat format;
+
+  const CalendarButton({
+    super.key,
+    required this.selectedDate,
+    required this.onDateSelected,
+    this.format = CalendarFormat.month,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.calendar_today),
+      onPressed: () {
+        showDialog(
+          context: context,
+          builder: (context) => Dialog(
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  TableCalendar(
+                    firstDay: DateTime.utc(2020, 1, 1),
+                    lastDay: DateTime.utc(2030, 12, 31),
+                    focusedDay: selectedDate,
+                    calendarFormat: format,
+                    selectedDayPredicate: (day) => isSameDay(selectedDate, day),
+                    onDaySelected: (selectedDay, focusedDay) {
+                      onDateSelected(selectedDay);
+                      Navigator.pop(context);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
 
 // Widget chính cho màn hình phân tích
 class AnalyticsScreen extends StatelessWidget {

@@ -54,10 +54,8 @@ class TransactionListItem extends StatelessWidget {
                 : (isIncome ? Colors.green : Colors.red),
             child: Icon(
               category?.icon != null
-                  ? IconData(
-                      int.parse(category!.icon),
-                      fontFamily: 'MaterialIcons',
-                    )
+                  ? Icons
+                        .category // Use a constant icon instead of dynamic IconData
                   : (isIncome ? Icons.arrow_upward : Icons.arrow_downward),
               color: Colors.white,
               size: 20, // Adjust icon size

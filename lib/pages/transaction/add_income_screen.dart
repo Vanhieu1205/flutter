@@ -117,11 +117,8 @@ class _AddIncomeScreenState extends State<AddIncomeScreen> {
                             backgroundColor: isSelected
                                 ? Colors.teal
                                 : Color(int.parse(category.color)),
-                            child: Icon(
-                              IconData(
-                                int.parse(category.icon),
-                                fontFamily: 'MaterialIcons',
-                              ),
+                            child: const Icon(
+                              Icons.category,
                               color: Colors.white,
                             ),
                           ),

@@ -34,6 +34,7 @@ class DashboardScreen extends StatelessWidget {
 
           return ListView(
             padding: const EdgeInsets.all(16),
+
             children: [
               _SummaryCard(
                 title: 'Total Balance',
@@ -99,6 +100,7 @@ class _SummaryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 4, // Add subtle shadow
+      color: const Color(0xFF3ACBAB),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ), // Rounded corners

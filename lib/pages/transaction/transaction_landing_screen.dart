@@ -15,7 +15,7 @@ class TransactionLandingScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Transaction'), // Updated AppBar title
-        backgroundColor: Colors.teal, // Consistent AppBar color
+        backgroundColor: const Color(0xFF3ACBAB), // Consistent AppBar color
         automaticallyImplyLeading: false, // Hide back button on main screens
       ),
       body: Consumer3<IncomeViewModel, ExpenseViewModel, CategoryViewModel>(

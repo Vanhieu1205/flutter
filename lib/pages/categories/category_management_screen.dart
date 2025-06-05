@@ -13,11 +13,12 @@ class CategoryManagementScreen extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Categories'),
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          backgroundColor: const Color(0xFF3ACBAB),
+          //backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           bottom: TabBar(
-            indicatorColor: Colors.teal,
-            labelColor: Colors.teal,
-            unselectedLabelColor: Colors.grey[600],
+            indicatorColor: const Color(0xFF3ACBAB),
+            labelColor: Colors.black,
+            unselectedLabelColor: Colors.black,
             tabs: const [
               Tab(text: 'Income'),
               Tab(text: 'Expense'),
@@ -51,7 +52,7 @@ class CategoryManagementScreen extends StatelessWidget {
           },
         ),
         floatingActionButton: FloatingActionButton(
-          backgroundColor: Colors.teal,
+          backgroundColor: const Color(0xFF3ACBAB),
           foregroundColor: Colors.white,
           onPressed: () {
             Navigator.pushNamed(context, '/addCategory');
@@ -95,11 +96,8 @@ class _CategoryGrid extends StatelessWidget {
               CircleAvatar(
                 radius: 30,
                 backgroundColor: Color(int.parse(category.color)),
-                child: Icon(
-                  IconData(
-                    int.parse(category.icon),
-                    fontFamily: 'MaterialIcons',
-                  ),
+                child: const Icon(
+                  Icons.category,
                   color: Colors.white,
                   size: 30,
                 ),

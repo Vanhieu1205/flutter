@@ -24,10 +24,8 @@ class _EditCategoryScreenState extends State<EditCategoryScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.category.name);
     _selectedColor = Color(int.parse(widget.category.color));
-    _selectedIcon = IconData(
-      int.parse(widget.category.icon),
-      fontFamily: 'MaterialIcons',
-    );
+    _selectedIcon =
+        Icons.category; // Use a constant icon instead of dynamic IconData
   }
 
   @override
