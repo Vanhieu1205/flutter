@@ -338,7 +338,7 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
                           borderData: FlBorderData(
                             show: true,
                             border: Border.all(
-                              color: Colors.grey[300]!,
+                              color: Colors.grey,
                               width: 1,
                             ),
                           ),
@@ -351,7 +351,7 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
                                 : maxY / 4, // Đảm bảo interval không bằng 0
                             getDrawingHorizontalLine: (value) {
                               return FlLine(
-                                color: Colors.grey[300]!,
+                                color: Colors.grey,
                                 strokeWidth: 0.5,
                               );
                             },

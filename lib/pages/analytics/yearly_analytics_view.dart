@@ -335,10 +335,7 @@ class _YearlyAnalyticsViewState extends State<YearlyAnalyticsView> {
 
                           borderData: FlBorderData(
                             show: true,
-                            border: Border.all(
-                              color: Colors.grey[300]!,
-                              width: 1,
-                            ),
+                            border: Border.all(color: Colors.grey, width: 1),
                           ),
                           gridData: FlGridData(
                             show: true,
@@ -349,7 +346,7 @@ class _YearlyAnalyticsViewState extends State<YearlyAnalyticsView> {
                                 : maxY / 4, // Đảm bảo interval không bằng 0
                             getDrawingHorizontalLine: (value) {
                               return FlLine(
-                                color: Colors.grey[300]!,
+                                color: Colors.grey,
                                 strokeWidth: 0.5,
                               );
                             },

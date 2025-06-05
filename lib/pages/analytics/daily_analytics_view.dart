@@ -276,22 +276,18 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                               sideTitles: SideTitles(
                                 showTitles: true,
                                 reservedSize: 40,
-                                getTitlesWidget: (value, meta) {
+                                getTitlesWidget: (double value, TitleMeta meta) {
                                   // Hiển thị nhãn cho các giá trị tại các khoảng lưới
                                   if (value >= 0 &&
                                       value % horizontalInterval == 0) {
-                                    return SideTitleWidget(
-                                      axisSide: meta.axisSide,
-                                      space: 4,
-                                      child: Text(value.toStringAsFixed(0)),
+                                    return Text(
+                                      value.toStringAsFixed(0),
+                                      style: const TextStyle(fontSize: 10),
+                                      textAlign: TextAlign.right,
                                     );
                                   }
                                   // Không hiển thị nhãn cho các giá trị khác
-                                  return SideTitleWidget(
-                                    axisSide: meta.axisSide,
-                                    space: 4,
-                                    child: Text(''),
-                                  );
+                                  return const Text('');
                                 },
                               ),
                             ),
@@ -326,7 +322,7 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                           borderData: FlBorderData(
                             show: true,
                             border: Border.all(
-                              color: Colors.grey[300]!,
+                              color: Colors.grey,
                               width: 1,
                             ),
                           ),
@@ -339,7 +335,7 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                                 : maxY / 4, // Đảm bảo interval không bằng 0
                             getDrawingHorizontalLine: (value) {
                               return FlLine(
-                                color: Colors.grey[300]!,
+                                color: Colors.grey,
                                 strokeWidth: 0.5,
                               );
                             },

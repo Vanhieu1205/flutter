@@ -40,7 +40,15 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
     final endOfWeek = startOfWeek.add(const Duration(days: 6));
 
     return transactions.where((transaction) {
-      final date = (transaction as dynamic).date;
+      // Safely access date, check for null and correct type
+      if (transaction == null) return false;
+
+      DateTime? date;
+      if (transaction is Income) date = transaction.date;
+      if (transaction is Expense) date = transaction.date;
+
+      if (date == null) return false; // Ensure date is available
+
       return date.isAfter(startOfWeek.subtract(const Duration(days: 1))) &&
           date.isBefore(endOfWeek.add(const Duration(days: 1)));
     }).toList();
@@ -60,21 +68,25 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
 
     // Kết hợp và sắp xếp các giao dịch theo ngày trong tuần cho biểu đồ
     final weeklyTransactions = [
-      ...weeklyIncomes.map(
-        (inc) => {
-          'amount': (inc as dynamic).amount,
-          'date': (inc as dynamic).date,
-          'isIncome': true,
-        },
-      ),
-      ...weeklyExpenses.map(
-        (exp) => {
-          'amount': (exp as dynamic).amount,
-          'date': (exp as dynamic).date,
-          'isIncome': false,
-        },
-      ),
-    ];
+      ...weeklyIncomes
+          .where((inc) => inc != null && inc is Income)
+          .map(
+            (inc) => {
+              'amount': (inc as Income).amount,
+              'date': (inc as Income).date,
+              'isIncome': true,
+            },
+          ),
+      ...weeklyExpenses
+          .where((exp) => exp != null && exp is Expense)
+          .map(
+            (exp) => {
+              'amount': (exp as Expense).amount,
+              'date': (exp as Expense).date,
+              'isIncome': false,
+            },
+          ),
+    ]..sort((a, b) => (b['date'] as DateTime).compareTo(a['date'] as DateTime));
 
     // Nhóm các giao dịch theo ngày trong tuần và tính tổng cho mỗi ngày
     Map<int, double> incomeTotalsPerDay = {};
@@ -83,12 +95,12 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
     for (var transaction in weeklyTransactions) {
       final day = (transaction['date'] as DateTime)
           .weekday; // Thứ 2 là 1, Chủ nhật là 7
-      if (transaction['isIncome']) {
+      if (transaction['isIncome'] as bool) {
         incomeTotalsPerDay[day] =
-            (incomeTotalsPerDay[day] ?? 0) + transaction['amount'];
+            (incomeTotalsPerDay[day] ?? 0) + (transaction['amount'] as double);
       } else {
         expenseTotalsPerDay[day] =
-            (expenseTotalsPerDay[day] ?? 0) + transaction['amount'];
+            (expenseTotalsPerDay[day] ?? 0) + (transaction['amount'] as double);
       }
     }
 
@@ -121,13 +133,13 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
     // Tính tổng thu nhập trong tuần
     final totalWeeklyIncome = weeklyIncomes.fold<double>(
       0,
-      (sum, income) => sum + (income as dynamic).amount,
+      (sum, income) => sum + (income is Income ? income.amount : 0),
     );
 
     // Tính tổng chi tiêu trong tuần
     final totalWeeklyExpense = weeklyExpenses.fold<double>(
       0,
-      (sum, expense) => sum + (expense as dynamic).amount,
+      (sum, expense) => sum + (expense is Expense ? expense.amount : 0),
     );
 
     // Tính số dư trong tuần
@@ -274,7 +286,7 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 // Biểu đồ phân tích theo tuần
                 Card(
                   elevation: 4,
@@ -284,20 +296,23 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                   child: Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: AspectRatio(
-                      aspectRatio: 1.7, // Adjust this ratio as needed
+                      aspectRatio:
+                          1.7, // Điều chỉnh tỷ lệ khung hình giống các view khác
                       child: BarChart(
                         BarChartData(
                           barGroups: barGroups,
+                          borderData: FlBorderData(
+                            show: true,
+                            border: Border.all(color: Colors.grey, width: 1),
+                          ),
                           titlesData: FlTitlesData(
-                            // Cấu hình trục Y bên trái
                             leftTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
-                                reservedSize: 60,
-                                getTitlesWidget: (value, meta) {
+                                reservedSize: 60, // Tăng kích thước cho trục Y
+                                getTitlesWidget: (double value, TitleMeta meta) {
                                   // Chỉ hiển thị giá trị tại các đường lưới và lớn hơn hoặc bằng 0
                                   if (value >= 0 && value % (maxY / 4) == 0) {
-                                    // Chia thành 4 khoảng từ 0 đến maxY
                                     return Text(
                                       value.toStringAsFixed(0),
                                       style: const TextStyle(fontSize: 10),
@@ -308,7 +323,6 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                                 },
                               ),
                             ),
-                            // Cấu hình trục X phía dưới
                             bottomTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
@@ -334,54 +348,79 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                                 reservedSize: 20,
                               ),
                             ),
-                            topTitles: AxisTitles(
+                            topTitles: const AxisTitles(
                               sideTitles: SideTitles(showTitles: false),
                             ),
-                            rightTitles: AxisTitles(
+                            rightTitles: const AxisTitles(
                               sideTitles: SideTitles(showTitles: false),
-                            ),
-                          ),
-                          borderData: FlBorderData(
-                            show: true,
-                            border: Border.all(
-                              color: Colors.grey[300]!,
-                              width: 1,
                             ),
                           ),
                           gridData: FlGridData(
                             show: true,
                             drawVerticalLine: false,
                             drawHorizontalLine: true,
-                            horizontalInterval: maxY == 0
-                                ? 1.0
-                                : maxY / 4, // Đảm bảo interval không bằng 0
+                            horizontalInterval: maxY == 0 ? 1.0 : maxY / 4,
                             getDrawingHorizontalLine: (value) {
                               return FlLine(
-                                color: Colors.grey[300]!,
+                                color: Colors.grey,
                                 strokeWidth: 0.5,
                               );
                             },
                           ),
                           alignment: BarChartAlignment.spaceAround,
                           maxY: maxY,
-                          minY: minY, // minY là 0
+                          minY: minY,
                         ),
                       ),
                     ),
                   ),
                 ),
-                // const SizedBox(height: 24),
-                // // TODO: Implement list of weekly transactions
-                // const Text(
-                //   'Weekly Transactions',
-                //   style: TextStyle(
-                //     fontSize: 18,
-                //     fontWeight: FontWeight.bold,
-                //     color: Colors.teal,
-                //   ),
-                // ),
-                // const SizedBox(height: 16),
-                // const Center(child: Text('List of weekly transactions placeholder')),
+                const SizedBox(height: 24),
+                // TODO: Implement list of weekly transactions
+                const Text(
+                  'Weekly Transactions',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.teal,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                // Thay thế placeholder bằng ListView hiển thị giao dịch chi tiết
+                ListView.builder(
+                  shrinkWrap:
+                      true, // Quan trọng để ListView hoạt động trong SingleChildScrollView
+                  physics:
+                      NeverScrollableScrollPhysics(), // Tắt cuộn riêng của ListView
+                  itemCount: weeklyTransactions.length,
+                  itemBuilder: (context, index) {
+                    final transaction = weeklyTransactions[index];
+                    final date = transaction['date'] as DateTime;
+                    final amount = transaction['amount'] as double;
+                    final isIncome = transaction['isIncome'] as bool;
+
+                    return ListTile(
+                      leading: Icon(
+                        isIncome ? Icons.arrow_downward : Icons.arrow_upward,
+                        color: isIncome ? Colors.green : Colors.red,
+                      ),
+                      title: Text(
+                        '${date.day}/${date.month}/${date.year}', // Hiển thị ngày giao dịch
+                        style: TextStyle(fontSize: 14),
+                      ),
+                      trailing: Text(
+                        '${amount.toStringAsFixed(0)} VNĐ',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: isIncome ? Colors.green : Colors.red,
+                        ),
+                      ),
+                      // Có thể thêm subtitle hoặc các thông tin khác nếu có
+                      // subtitle: Text(transaction['description'] ?? ''), // Nếu có trường description
+                    );
+                  },
+                ),
               ],
             ),
           ),
