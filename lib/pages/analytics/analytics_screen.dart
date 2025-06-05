@@ -1,0 +1,90 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../../viewmodels/income_viewmodel.dart';
+import '../../viewmodels/expense_viewmodel.dart';
+import 'daily_analytics_view.dart'; // Import view phân tích theo ngày
+import 'weekly_analytics_view.dart'; // Import view phân tích theo tuần
+import 'monthly_analytics_view.dart'; // Import view phân tích theo tháng
+import 'yearly_analytics_view.dart'; // Import view phân tích theo năm
+
+// Widget chính cho màn hình phân tích
+class AnalyticsScreen extends StatelessWidget {
+  const AnalyticsScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 4, // Số lượng tab (Ngày, Tuần, Tháng, Năm)
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('Analysis'), // Tiêu đề của AppBar
+          backgroundColor: const Color(0xFF3ACBAB), // Màu nền của AppBar
+          automaticallyImplyLeading: false, // Ẩn nút back trên màn hình chính
+          centerTitle: true, // Căn giữa tiêu đề AppBar
+          bottom: TabBar(
+            // Tùy chỉnh style cho TabBar
+            indicatorColor: Colors.tealAccent, // Màu của thanh indicator
+            labelColor: Colors.yellow, // Màu của tab được chọn
+            unselectedLabelColor: Colors.black, // Màu của tab chưa được chọn
+            tabs: const [
+              Tab(text: 'Daily'), // Tab phân tích theo ngày
+              Tab(text: 'Weekly'), // Tab phân tích theo tuần
+              Tab(text: 'Monthly'), // Tab phân tích theo tháng
+              Tab(text: 'Yearly'), // Tab phân tích theo năm
+            ],
+          ),
+        ),
+        // Sử dụng Consumer2 để lắng nghe thay đổi từ cả IncomeViewModel và ExpenseViewModel
+        body: Consumer2<IncomeViewModel, ExpenseViewModel>(
+          builder: (context, incomeViewModel, expenseViewModel, child) {
+            // Hiển thị loading indicator khi đang tải dữ liệu
+            if (incomeViewModel.isLoading || expenseViewModel.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            // Tính tổng thu nhập
+            final totalIncome = incomeViewModel.incomes.fold<double>(
+              0,
+              (sum, income) => sum + income.amount,
+            );
+
+            // Tính tổng chi tiêu
+            final totalExpense = expenseViewModel.expenses.fold<double>(
+              0,
+              (sum, expense) => sum + expense.amount,
+            );
+
+            // Tính số dư tổng cộng
+            final totalBalance = totalIncome - totalExpense;
+
+            // Hiển thị nội dung tương ứng với từng tab
+            return TabBarView(
+              children: [
+                // Nội dung tab phân tích theo ngày
+                DailyAnalyticsView(
+                  incomes: incomeViewModel.incomes,
+                  expenses: expenseViewModel.expenses,
+                ),
+                // Nội dung tab phân tích theo tuần
+                WeeklyAnalyticsView(
+                  incomes: incomeViewModel.incomes,
+                  expenses: expenseViewModel.expenses,
+                ),
+                // Nội dung tab phân tích theo tháng
+                MonthlyAnalyticsView(
+                  incomes: incomeViewModel.incomes,
+                  expenses: expenseViewModel.expenses,
+                ),
+                // Nội dung tab phân tích theo năm
+                YearlyAnalyticsView(
+                  incomes: incomeViewModel.incomes,
+                  expenses: expenseViewModel.expenses,
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+}
