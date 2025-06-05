@@ -4,6 +4,7 @@ import '../../models/expense_model.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'analytics_screen.dart';
+import 'package:intl/intl.dart';
 
 // Widget hiển thị phân tích theo ngày
 class DailyAnalyticsView extends StatefulWidget {
@@ -62,13 +63,14 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
       selectedDate,
     );
 
-    // Kết hợp và sắp xếp các giao dịch theo thời gian cho biểu đồ
-    final dailyTransactions = [
+    // Kết hợp và sắp xếp các giao dịch theo thời gian cho biểu đồ và danh sách chi tiết
+    final allDailyTransactions = [
       ...dailyIncomes.map(
         (inc) => {
           'amount': (inc as dynamic).amount,
           'date': (inc as dynamic).date,
           'isIncome': true,
+          'original': inc, // Keep a reference to the original object
         },
       ),
       ...dailyExpenses.map(
@@ -76,20 +78,21 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
           'amount': (exp as dynamic).amount,
           'date': (exp as dynamic).date,
           'isIncome': false,
+          'original': exp, // Keep a reference to the original object
         },
       ),
     ]..sort((a, b) => (a['date'] as DateTime).compareTo(b['date'] as DateTime));
 
-    // Tạo dữ liệu cho biểu đồ cột
+    // Tạo dữ liệu cho biểu đồ cột (sử dụng allDailyTransactions)
     List<BarChartGroupData> barGroups = [];
-    for (int i = 0; i < dailyTransactions.length; i++) {
-      final transaction = dailyTransactions[i];
+    for (int i = 0; i < allDailyTransactions.length; i++) {
+      final transaction = allDailyTransactions[i];
       barGroups.add(
         BarChartGroupData(
           x: i,
           barRods: [
             BarChartRodData(
-              toY: transaction['amount'], // Luôn hiển thị giá trị dương
+              toY: transaction['amount'],
               color: transaction['isIncome'] ? Colors.green : Colors.red,
               width: 15,
             ),
@@ -119,11 +122,10 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
             ? totalDailyIncome
             : totalDailyExpense) *
         1.2;
-    // Set minY to 0 as we are only showing positive values
     final minY = 0.0;
 
     // Calculate horizontal interval for approximately 4 grid lines
-    final interval = maxY / 4; // Chia thành 4 khoảng từ 0 đến maxY
+    final interval = maxY / 4;
     final horizontalInterval = interval == 0 ? 10.0 : interval;
 
     return Column(
@@ -275,19 +277,50 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                             leftTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
-                                reservedSize: 40,
+                                reservedSize: 60,
                                 getTitlesWidget: (double value, TitleMeta meta) {
-                                  // Hiển thị nhãn cho các giá trị tại các khoảng lưới
-                                  if (value >= 0 &&
-                                      value % horizontalInterval == 0) {
+                                  // Tính toán maxY, minY và interval
+                                  final calculatedMaxY =
+                                      (totalDailyIncome > totalDailyExpense
+                                          ? totalDailyIncome
+                                          : totalDailyExpense) *
+                                      1.2;
+                                  // Đảm bảo interval không bằng 0 để tránh lỗi chia cho 0
+                                  final interval = (calculatedMaxY / 4) > 0
+                                      ? (calculatedMaxY / 4)
+                                      : 1.0;
+
+                                  // Kiểm tra xem giá trị có đủ gần với một bội số của interval (tính từ minY) hay không
+                                  const double epsilon = 0.01; // Ngưỡng sai số
+                                  bool isCloseToGrid = false;
+                                  if (interval > 0) {
+                                    // Iterate through potential grid line multiples
+                                    for (int i = 0; ; i++) {
+                                      final expectedValue = minY + i * interval;
+                                      if ((value - expectedValue).abs() <
+                                          epsilon) {
+                                        isCloseToGrid = true;
+                                        break;
+                                      }
+                                      // Stop if we've gone past the max value
+                                      if (expectedValue >
+                                          calculatedMaxY + epsilon) {
+                                        break;
+                                      }
+                                    }
+                                  }
+
+                                  // Hiển thị nhãn nếu giá trị đủ gần với một đường lưới
+                                  if (isCloseToGrid) {
                                     return Text(
-                                      value.toStringAsFixed(0),
+                                      value.toStringAsFixed(
+                                        0,
+                                      ), // Định dạng số nguyên
                                       style: const TextStyle(fontSize: 10),
-                                      textAlign: TextAlign.right,
+                                      textAlign: TextAlign.right, // Căn phải
                                     );
                                   }
-                                  // Không hiển thị nhãn cho các giá trị khác
-                                  return const Text('');
+                                  return const SizedBox.shrink(); // Sử dụng SizedBox.shrink()
                                 },
                               ),
                             ),
@@ -296,13 +329,13 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                                 showTitles: true,
                                 getTitlesWidget: (value, meta) {
                                   if (value.toInt() <
-                                      dailyTransactions.length) {
+                                      allDailyTransactions.length) {
                                     final transactionTime =
-                                        (dailyTransactions[value
+                                        (allDailyTransactions[value
                                                 .toInt()]['date']
                                             as DateTime);
                                     return Text(
-                                      '${transactionTime.hour}:${transactionTime.minute.toString().padLeft(2, '0')}\'',
+                                      '${transactionTime.hour}:${transactionTime.minute.toString().padLeft(2, '0')}',
                                       style: const TextStyle(fontSize: 10),
                                       textAlign: TextAlign.center,
                                     );
@@ -321,10 +354,7 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                           ),
                           borderData: FlBorderData(
                             show: true,
-                            border: Border.all(
-                              color: Colors.grey,
-                              width: 1,
-                            ),
+                            border: Border.all(color: Colors.grey, width: 1),
                           ),
                           gridData: FlGridData(
                             show: true,
@@ -348,11 +378,100 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                     ),
                   ),
                 ),
+                const SizedBox(height: 24),
+                // Daily Transactions List
+                const Text(
+                  'Daily Transactions',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: allDailyTransactions.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final transactionMap = allDailyTransactions[index];
+                    // Pass the original transaction object to the helper method
+                    final originalTransaction = transactionMap['original'];
+                    if (originalTransaction != null) {
+                      return _buildTransactionCard(originalTransaction);
+                    } else {
+                      return Container(); // Handle case where original object is missing
+                    }
+                  },
+                ),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildTransactionCard(dynamic transaction) {
+    final isIncome = transaction is Income;
+    final icon = isIncome ? Icons.arrow_upward : Icons.arrow_downward;
+    final color = isIncome ? Colors.green : Colors.red;
+    final amount = isIncome
+        ? '+${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction.amount)}'
+        : '-${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction.amount)}';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction.description,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat('dd/MM/yyyy').format(transaction.date),
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            amount,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

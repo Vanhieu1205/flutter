@@ -295,16 +295,57 @@ class _YearlyAnalyticsViewState extends State<YearlyAnalyticsView> {
                                 showTitles: true,
                                 reservedSize: 60,
                                 getTitlesWidget: (value, meta) {
-                                  // Chỉ hiển thị giá trị tại các đường lưới và lớn hơn hoặc bằng 0
-                                  if (value >= 0 && value % (maxY / 4) == 0) {
+                                  // Tính khoảng giá trị cho trục Y
+                                  final calculatedMaxY =
+                                      (totalYearlyIncome > totalYearlyExpense
+                                          ? totalYearlyIncome
+                                          : totalYearlyExpense) *
+                                      1.2;
+                                  // Đảm bảo interval không bằng 0
+                                  final interval = (calculatedMaxY / 4) > 0
+                                      ? (calculatedMaxY / 4)
+                                      : 1.0;
+
+                                  // Danh sách các giá trị trục Y dự kiến nơi có đường lưới
+                                  List<double> expectedYValues = [];
+                                  // Bắt đầu từ minY và thêm các bội số của interval
+                                  for (
+                                    int i = 0;
+                                    (minY + i * interval) <=
+                                        calculatedMaxY + interval / 2.0;
+                                    i++
+                                  ) {
+                                    // Thêm interval/2.0 để bắt các giá trị gần maxY
+                                    expectedYValues.add(minY + i * interval);
+                                  }
+                                  // Đảm bảo maxY cũng được xem xét
+                                  if (!expectedYValues.contains(
+                                    calculatedMaxY,
+                                  )) {
+                                    expectedYValues.add(calculatedMaxY);
+                                  }
+                                  expectedYValues
+                                      .sort(); // Sắp xếp để dễ kiểm tra
+
+                                  // Kiểm tra xem giá trị có đủ gần với bất kỳ giá trị đường lưới dự kiến nào không
+                                  const double epsilon = 1.0; // Ngưỡng sai số
+                                  bool isCloseToGrid = expectedYValues.any(
+                                    (gridValue) =>
+                                        (value - gridValue).abs() < epsilon,
+                                  );
+
+                                  // Hiển thị nhãn nếu giá trị đủ gần với một đường lưới
+                                  if (isCloseToGrid) {
                                     // Chia thành 4 khoảng từ 0 đến maxY
                                     return Text(
-                                      value.toStringAsFixed(0),
+                                      value.toStringAsFixed(
+                                        0,
+                                      ), // Định dạng số nguyên
                                       style: const TextStyle(fontSize: 10),
-                                      textAlign: TextAlign.right,
+                                      textAlign: TextAlign.right, // Căn phải
                                     );
                                   }
-                                  return const SizedBox.shrink();
+                                  return const SizedBox.shrink(); // Sử dụng SizedBox.shrink()
                                 },
                               ),
                             ),

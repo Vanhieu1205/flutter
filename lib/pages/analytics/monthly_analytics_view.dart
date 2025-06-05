@@ -34,13 +34,12 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
     List<dynamic> transactions,
     DateTime selectedDay,
   ) {
-    final startOfMonth = DateTime(selectedDay.year, selectedDay.month, 1);
     final endOfMonth = DateTime(selectedDay.year, selectedDay.month + 1, 0);
 
     return transactions.where((transaction) {
+      // Lọc giao dịch chỉ trong tháng được chọn
       final date = (transaction as dynamic).date;
-      return date.isAfter(startOfMonth.subtract(const Duration(days: 1))) &&
-          date.isBefore(endOfMonth.add(const Duration(days: 1)));
+      return date.year == selectedDay.year && date.month == selectedDay.month;
     }).toList();
   }
 
@@ -55,6 +54,13 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
       widget.expenses,
       selectedDate,
     );
+
+    // TODO: Add logging to debug data discrepancy
+    print(
+      'Selected Date for Monthly View: ${selectedDate.month}/${selectedDate.year}',
+    );
+    print('Monthly Incomes (${monthlyIncomes.length}): $monthlyIncomes');
+    print('Monthly Expenses (${monthlyExpenses.length}): $monthlyExpenses');
 
     // Kết hợp các giao dịch trong tháng
     final monthlyTransactions = [
@@ -297,16 +303,42 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
                                 showTitles: true,
                                 reservedSize: 60,
                                 getTitlesWidget: (value, meta) {
-                                  // Chỉ hiển thị giá trị tại các đường lưới và lớn hơn hoặc bằng 0
-                                  if (value >= 0 && value % (maxY / 4) == 0) {
-                                    // Chia thành 4 khoảng từ 0 đến maxY
+                                  // Tính toán maxY, minY và interval
+                                  final calculatedMaxY =
+                                      (totalMonthlyIncome > totalMonthlyExpense
+                                          ? totalMonthlyIncome
+                                          : totalMonthlyExpense) *
+                                      1.2;
+                                  // Đảm bảo interval không bằng 0 để tránh lỗi chia cho 0
+                                  final interval = (calculatedMaxY / 4) > 0
+                                      ? (calculatedMaxY / 4)
+                                      : 1.0;
+
+                                  // Kiểm tra xem giá trị có đủ gần với một bội số của interval (tính từ minY) hay không
+                                  // Đây là cách chính xác hơn để kiểm tra vị trí trên lưới
+                                  bool isCloseToGrid = false;
+                                  if (interval > 0) {
+                                    final ratio = (value - minY) / interval;
+                                    const double epsilon =
+                                        0.01; // Ngưỡng sai số nhỏ
+                                    // Kiểm tra xem tỉ lệ có đủ gần với một số nguyên không
+                                    if ((ratio - ratio.round()).abs() <
+                                        epsilon) {
+                                      isCloseToGrid = true;
+                                    }
+                                  }
+
+                                  // Hiển thị nhãn nếu giá trị đủ gần với một đường lưới
+                                  if (isCloseToGrid) {
                                     return Text(
-                                      value.toStringAsFixed(0),
+                                      value.toStringAsFixed(
+                                        0,
+                                      ), // Định dạng số nguyên
                                       style: const TextStyle(fontSize: 10),
-                                      textAlign: TextAlign.right,
+                                      textAlign: TextAlign.right, // Căn phải
                                     );
                                   }
-                                  return const SizedBox.shrink();
+                                  return const SizedBox.shrink(); // Sử dụng SizedBox.shrink()
                                 },
                               ),
                             ),
@@ -337,10 +369,7 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
                           ),
                           borderData: FlBorderData(
                             show: true,
-                            border: Border.all(
-                              color: Colors.grey,
-                              width: 1,
-                            ),
+                            border: Border.all(color: Colors.grey, width: 1),
                           ),
                           gridData: FlGridData(
                             show: true,
@@ -364,20 +393,6 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
                     ),
                   ),
                 ),
-
-                // Hàng hiển thị thu nhập và chi tiêu
-                const SizedBox(height: 24),
-                // TODO: Implement list of monthly transactions
-                // const Text(
-                //   'Monthly Transactions',
-                //   style: TextStyle(
-                //     fontSize: 18,
-                //     fontWeight: FontWeight.bold,
-                //     color: Colors.teal,
-                //   ),
-                // ),
-                // const SizedBox(height: 16),
-                // const Center(child: Text('List of monthly transactions placeholder')),
               ],
             ),
           ),
