@@ -189,7 +189,7 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 10),
                 // Hàng hiển thị thu nhập và chi tiêu
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -259,7 +259,7 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 // Biểu đồ phân tích theo ngày
                 Card(
                   elevation: 4,
@@ -415,8 +415,8 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
     final icon = isIncome ? Icons.arrow_upward : Icons.arrow_downward;
     final color = isIncome ? Colors.green : Colors.red;
     final amount = isIncome
-        ? '+${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction.amount)}'
-        : '-${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction.amount)}';
+        ? '+${NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ').format(transaction.amount)}'
+        : '-${NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ').format(transaction.amount)}';
 
     return Container(
       padding: const EdgeInsets.all(16),

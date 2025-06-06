@@ -206,7 +206,7 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                   'Weekly Balance',
                   NumberFormat.currency(
                     locale: 'vi_VN',
-                    symbol: '₫',
+                    symbol: 'VNĐ',
                   ).format(weeklyBalance),
                   weeklyBalance >= 0 ? Colors.green : Colors.red,
                 ),
@@ -219,7 +219,7 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                         'Income',
                         NumberFormat.currency(
                           locale: 'vi_VN',
-                          symbol: '₫',
+                          symbol: 'VNĐ',
                         ).format(totalWeeklyIncome),
                         Colors.green,
                       ),
@@ -230,7 +230,7 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                         'Expense',
                         NumberFormat.currency(
                           locale: 'vi_VN',
-                          symbol: '₫',
+                          symbol: 'VNĐ',
                         ).format(totalWeeklyExpense),
                         Colors.red,
                       ),
@@ -291,7 +291,7 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                                         return Text(
                                           NumberFormat.currency(
                                             locale: 'vi_VN',
-                                            symbol: '₫',
+                                            symbol: 'VNĐ',
                                             decimalDigits: 0,
                                           ).format(value),
                                           style: const TextStyle(fontSize: 10),
@@ -436,8 +436,8 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
     final icon = isIncome ? Icons.arrow_upward : Icons.arrow_downward;
     final color = isIncome ? Colors.green : Colors.red;
     final amount = isIncome
-        ? '+${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction['amount'])}'
-        : '-${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction['amount'])}';
+        ? '+${NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ').format(transaction['amount'])}'
+        : '-${NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ').format(transaction['amount'])}';
 
     return Container(
       padding: const EdgeInsets.all(16),

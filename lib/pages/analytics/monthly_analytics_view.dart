@@ -63,6 +63,7 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
           'amount': (inc as dynamic).amount,
           'date': (inc as dynamic).date,
           'isIncome': true,
+          'description': (inc as dynamic).description,
         },
       ),
       ...monthlyExpenses.map(
@@ -70,6 +71,7 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
           'amount': (exp as dynamic).amount,
           'date': (exp as dynamic).date,
           'isIncome': false,
+          'description': (exp as dynamic).description,
         },
       ),
     ];
@@ -419,8 +421,8 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
     final icon = isIncome ? Icons.arrow_upward : Icons.arrow_downward;
     final color = isIncome ? Colors.green : Colors.red;
     final amount = isIncome
-        ? '+${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction['amount'])}'
-        : '-${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction['amount'])}';
+        ? '+${NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ').format(transaction['amount'])}'
+        : '-${NumberFormat.currency(locale: 'vi_VN', symbol: 'VNĐ').format(transaction['amount'])}';
 
     return Container(
       padding: const EdgeInsets.all(16),
