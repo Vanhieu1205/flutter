@@ -4,6 +4,7 @@ import '../../models/expense_model.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'analytics_screen.dart';
+import 'package:intl/intl.dart';
 
 // Widget hiển thị phân tích theo năm
 class YearlyAnalyticsView extends StatefulWidget {
@@ -293,7 +294,7 @@ class _YearlyAnalyticsViewState extends State<YearlyAnalyticsView> {
                             leftTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
-                                reservedSize: 60,
+                                reservedSize: 50,
                                 getTitlesWidget: (value, meta) {
                                   // Tính khoảng giá trị cho trục Y
                                   final calculatedMaxY =
@@ -403,22 +404,96 @@ class _YearlyAnalyticsViewState extends State<YearlyAnalyticsView> {
                 ),
 
                 const SizedBox(height: 24),
-                // TODO: Implement list of yearly transactions
-                // const Text(
-                //   'Yearly Transactions',
-                //   style: TextStyle(
-                //     fontSize: 18,
-                //     fontWeight: FontWeight.bold,
-                //     color: Colors.teal,
-                //   ),
-                // ),
-                // const SizedBox(height: 16),
-                // const Center(child: Text('List of yearly transactions placeholder')),
+                // Yearly Transactions List
+                const Text(
+                  'Yearly Transactions',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 16),
+                ListView.separated(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: yearlyTransactions.length,
+                  separatorBuilder: (context, index) =>
+                      const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    final transaction = yearlyTransactions[index];
+                    return _buildTransactionCard(transaction);
+                  },
+                ),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  // Helper method for individual transaction cards
+  Widget _buildTransactionCard(dynamic transaction) {
+    final isIncome = transaction['isIncome'] as bool;
+    final icon = isIncome ? Icons.arrow_upward : Icons.arrow_downward;
+    final color = isIncome ? Colors.green : Colors.red;
+    final amount = isIncome
+        ? '+${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction['amount'])}'
+        : '-${NumberFormat.currency(locale: 'vi_VN', symbol: '₫').format(transaction['amount'])}';
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.grey.withOpacity(0.1),
+            spreadRadius: 1,
+            blurRadius: 4,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+            ),
+            child: Icon(icon, color: color),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  transaction['description'] ?? 'No description',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  DateFormat(
+                    'dd/MM/yyyy',
+                  ).format(transaction['date'] as DateTime),
+                  style: const TextStyle(fontSize: 14, color: Colors.grey),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            amount,
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

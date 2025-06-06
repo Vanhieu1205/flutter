@@ -255,7 +255,7 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                             leftTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
-                                reservedSize: 60,
+                                reservedSize: 50,
                                 getTitlesWidget:
                                     (double value, TitleMeta meta) {
                                       final calculatedMaxY = maxY;

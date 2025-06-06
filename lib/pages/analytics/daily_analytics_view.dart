@@ -277,7 +277,7 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                             leftTitles: AxisTitles(
                               sideTitles: SideTitles(
                                 showTitles: true,
-                                reservedSize: 60,
+                                reservedSize: 50,
                                 getTitlesWidget: (double value, TitleMeta meta) {
                                   // Tính toán maxY, minY và interval
                                   final calculatedMaxY =
