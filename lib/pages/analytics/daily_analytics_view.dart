@@ -128,285 +128,294 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
     final interval = maxY / 4;
     final horizontalInterval = interval == 0 ? 10.0 : interval;
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              CalendarButton(
-                selectedDate: selectedDate,
-                onDateSelected: (date) {
-                  setState(() {
-                    selectedDate = date;
-                  });
-                },
-              ),
-            ],
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white, // Background color for the rounded container
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.0), // Rounded top-left corner
+          topRight: Radius.circular(20.0), // Rounded top-right corner
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
+      ),
+      clipBehavior: Clip.antiAlias, // Clip content to the rounded corners
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Card tổng quan số dư trong ngày
-                Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Daily Balance',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(color: Colors.grey[700]),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${dailyBalance.toStringAsFixed(0)} VNĐ',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: dailyBalance >= 0
-                                    ? Colors.green
-                                    : Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ],
-                    ),
+                Text(
+                  '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 10),
-                // Hàng hiển thị thu nhập và chi tiêu
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Card thu nhập
-                    Expanded(
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Income',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(color: Colors.grey[700]),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${totalDailyIncome.toStringAsFixed(0)} VNĐ',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    // Card chi tiêu
-                    Expanded(
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Expense',
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(color: Colors.grey[700]),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${totalDailyExpense.toStringAsFixed(0)} VNĐ',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                // Biểu đồ phân tích theo ngày
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: SizedBox(
-                      height: 200,
-                      child: BarChart(
-                        BarChartData(
-                          barGroups: barGroups,
-                          titlesData: FlTitlesData(
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 50,
-                                getTitlesWidget: (double value, TitleMeta meta) {
-                                  // Tính toán maxY, minY và interval
-                                  final calculatedMaxY =
-                                      (totalDailyIncome > totalDailyExpense
-                                          ? totalDailyIncome
-                                          : totalDailyExpense) *
-                                      1.2;
-                                  // Đảm bảo interval không bằng 0 để tránh lỗi chia cho 0
-                                  final interval = (calculatedMaxY / 4) > 0
-                                      ? (calculatedMaxY / 4)
-                                      : 1.0;
-
-                                  // Kiểm tra xem giá trị có đủ gần với một bội số của interval (tính từ minY) hay không
-                                  const double epsilon = 0.01; // Ngưỡng sai số
-                                  bool isCloseToGrid = false;
-                                  if (interval > 0) {
-                                    // Iterate through potential grid line multiples
-                                    for (int i = 0; ; i++) {
-                                      final expectedValue = minY + i * interval;
-                                      if ((value - expectedValue).abs() <
-                                          epsilon) {
-                                        isCloseToGrid = true;
-                                        break;
-                                      }
-                                      // Stop if we've gone past the max value
-                                      if (expectedValue >
-                                          calculatedMaxY + epsilon) {
-                                        break;
-                                      }
-                                    }
-                                  }
-
-                                  // Hiển thị nhãn nếu giá trị đủ gần với một đường lưới
-                                  if (isCloseToGrid) {
-                                    return Text(
-                                      value.toStringAsFixed(
-                                        0,
-                                      ), // Định dạng số nguyên
-                                      style: const TextStyle(fontSize: 10),
-                                      textAlign: TextAlign.right, // Căn phải
-                                    );
-                                  }
-                                  return const SizedBox.shrink(); // Sử dụng SizedBox.shrink()
-                                },
-                              ),
-                            ),
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget: (value, meta) {
-                                  if (value.toInt() <
-                                      allDailyTransactions.length) {
-                                    final transactionTime =
-                                        (allDailyTransactions[value
-                                                .toInt()]['date']
-                                            as DateTime);
-                                    return Text(
-                                      '${transactionTime.hour}:${transactionTime.minute.toString().padLeft(2, '0')}',
-                                      style: const TextStyle(fontSize: 10),
-                                      textAlign: TextAlign.center,
-                                    );
-                                  }
-                                  return Container();
-                                },
-                                reservedSize: 20,
-                              ),
-                            ),
-                            topTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            rightTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                          ),
-                          borderData: FlBorderData(
-                            show: true,
-                            border: Border.all(color: Colors.grey, width: 1),
-                          ),
-                          gridData: FlGridData(
-                            show: true,
-                            drawVerticalLine: false,
-                            drawHorizontalLine: true,
-                            horizontalInterval: maxY == 0
-                                ? 1.0
-                                : maxY / 4, // Đảm bảo interval không bằng 0
-                            getDrawingHorizontalLine: (value) {
-                              return FlLine(
-                                color: Colors.grey,
-                                strokeWidth: 0.5,
-                              );
-                            },
-                          ),
-                          alignment: BarChartAlignment.spaceAround,
-                          maxY: maxY,
-                          minY: minY, // minY là 0
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                // Daily Transactions List
-                const Text(
-                  'Daily Transactions',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: allDailyTransactions.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final transactionMap = allDailyTransactions[index];
-                    // Pass the original transaction object to the helper method
-                    final originalTransaction = transactionMap['original'];
-                    if (originalTransaction != null) {
-                      return _buildTransactionCard(originalTransaction);
-                    } else {
-                      return Container(); // Handle case where original object is missing
-                    }
+                CalendarButton(
+                  selectedDate: selectedDate,
+                  onDateSelected: (date) {
+                    setState(() {
+                      selectedDate = date;
+                    });
                   },
                 ),
               ],
             ),
           ),
-        ),
-      ],
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Card tổng quan số dư trong ngày
+                  Card(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    elevation: 4,
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Daily Balance',
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(color: Colors.grey[700]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${dailyBalance.toStringAsFixed(0)} VNĐ',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  color: dailyBalance >= 0
+                                      ? Colors.green
+                                      : Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  // Hàng hiển thị thu nhập và chi tiêu
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Card thu nhập
+                      Expanded(
+                        child: Card(
+                          elevation: 4,
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Income',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(color: Colors.grey[700]),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '${totalDailyIncome.toStringAsFixed(0)} VNĐ',
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Card chi tiêu
+                      Expanded(
+                        child: Card(
+                          elevation: 4,
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Expense',
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(color: Colors.grey[700]),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '${totalDailyExpense.toStringAsFixed(0)} VNĐ',
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // Biểu đồ phân tích theo ngày
+                  Card(
+                    elevation: 4,
+                    color: const Color(0xFFDFF7E2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: SizedBox(
+                        height: 200,
+                        child: BarChart(
+                          BarChartData(
+                            barGroups: barGroups,
+                            titlesData: FlTitlesData(
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 50,
+                                  getTitlesWidget: (double value, TitleMeta meta) {
+                                    // Tính toán maxY, minY và interval
+                                    final calculatedMaxY =
+                                        (totalDailyIncome > totalDailyExpense
+                                            ? totalDailyIncome
+                                            : totalDailyExpense) *
+                                        1.2;
+                                    // Đảm bảo interval không bằng 0 để tránh lỗi chia cho 0
+                                    final interval = (calculatedMaxY / 4) > 0
+                                        ? (calculatedMaxY / 4)
+                                        : 1.0;
+
+                                    // Tính toán các mốc giá trị cho đường lưới ngang dựa trên phạm vi trục Y
+                                    // Chúng ta muốn 4 khoảng bằng nhau, tức là 5 mốc (0, interval, 2*interval, 3*interval, 4*interval=maxY)
+                                    List<double> expectedYValues = [];
+                                    for (int i = 0; i <= 4; i++) {
+                                      expectedYValues.add(minY + i * interval);
+                                    }
+
+                                    // Kiểm tra xem giá trị hiện tại có đủ gần với một trong các mốc giá trị dự kiến không
+                                    // Sử dụng một ngưỡng sai số nhỏ để so sánh số thực
+                                    const double epsilon = 1.0; // Ngưỡng sai số
+                                    bool isCloseToGrid = expectedYValues.any(
+                                      (gridValue) =>
+                                          (value - gridValue).abs() < epsilon,
+                                    );
+
+                                    // Hiển thị nhãn nếu giá trị đủ gần với một đường lưới
+                                    if (isCloseToGrid) {
+                                      return Text(
+                                        value.toStringAsFixed(
+                                          0,
+                                        ), // Định dạng số nguyên
+                                        style: const TextStyle(fontSize: 10),
+                                        textAlign: TextAlign.right, // Căn phải
+                                      );
+                                    }
+                                    return const SizedBox.shrink(); // Sử dụng SizedBox.shrink()
+                                  },
+                                ),
+                              ),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    if (value.toInt() <
+                                        allDailyTransactions.length) {
+                                      final transactionTime =
+                                          (allDailyTransactions[value
+                                                  .toInt()]['date']
+                                              as DateTime);
+                                      return Text(
+                                        '${transactionTime.hour}:${transactionTime.minute.toString().padLeft(2, '0')}',
+                                        style: const TextStyle(fontSize: 10),
+                                        textAlign: TextAlign.center,
+                                      );
+                                    }
+                                    return Container();
+                                  },
+                                  reservedSize: 20,
+                                ),
+                              ),
+                              topTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              rightTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                            ),
+                            borderData: FlBorderData(
+                              show: true,
+                              border: Border.all(color: Colors.grey, width: 1),
+                            ),
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: false,
+                              drawHorizontalLine: true,
+                              horizontalInterval: maxY == 0
+                                  ? 1.0
+                                  : maxY / 4, // Đảm bảo interval không bằng 0
+                              getDrawingHorizontalLine: (value) {
+                                return FlLine(
+                                  color: Colors.grey,
+                                  strokeWidth: 0.5,
+                                );
+                              },
+                            ),
+                            alignment: BarChartAlignment.spaceAround,
+                            maxY: maxY,
+                            minY: minY, // minY là 0
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Daily Transactions List
+                  const Text(
+                    'Daily Transactions',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: allDailyTransactions.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final transactionMap = allDailyTransactions[index];
+                      // Pass the original transaction object to the helper method
+                      final originalTransaction = transactionMap['original'];
+                      if (originalTransaction != null) {
+                        return _buildTransactionCard(originalTransaction);
+                      } else {
+                        return Container(); // Handle case where original object is missing
+                      }
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

@@ -169,223 +169,220 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
     // minY is 0 as we are only showing positive values
     final minY = 0.0;
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Display the week range
-              Text(
-                'Week of ${DateFormat('dd/MM/yyyy').format(selectedDate.subtract(Duration(days: selectedDate.weekday - 1)))} - ${DateFormat('dd/MM/yyyy').format(selectedDate.add(Duration(days: 7 - selectedDate.weekday)))}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              // Calendar Button for Week selection
-              CalendarButton(
-                selectedDate: selectedDate,
-                onDateSelected: (date) {
-                  setState(() {
-                    selectedDate = date; // Update selected date
-                  });
-                },
-                format: CalendarFormat.week, // Set format to week
-              ),
-            ],
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white, // Background color for the rounded container
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.0), // Rounded top-left corner
+          topRight: Radius.circular(20.0), // Rounded top-right corner
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
+      ),
+      clipBehavior: Clip.antiAlias, // Clip content to the rounded corners
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Weekly Summary Cards
-                _buildSummaryCard(
-                  'Weekly Balance',
-                  NumberFormat.currency(
-                    locale: 'vi_VN',
-                    symbol: 'VNĐ',
-                  ).format(weeklyBalance),
-                  weeklyBalance >= 0 ? Colors.green : Colors.red,
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Expanded(
-                      child: _buildSummaryCard(
-                        'Income',
-                        NumberFormat.currency(
-                          locale: 'vi_VN',
-                          symbol: 'VNĐ',
-                        ).format(totalWeeklyIncome),
-                        Colors.green,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildSummaryCard(
-                        'Expense',
-                        NumberFormat.currency(
-                          locale: 'vi_VN',
-                          symbol: 'VNĐ',
-                        ).format(totalWeeklyExpense),
-                        Colors.red,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                // Weekly Bar Chart
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: AspectRatio(
-                      aspectRatio: 1.7,
-                      child: BarChart(
-                        BarChartData(
-                          barGroups: barGroups,
-                          titlesData: FlTitlesData(
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 50,
-                                getTitlesWidget:
-                                    (double value, TitleMeta meta) {
-                                      final calculatedMaxY = maxY;
-                                      final interval = (calculatedMaxY / 4) > 0
-                                          ? (calculatedMaxY / 4)
-                                          : 1.0;
-
-                                      List<double> expectedYValues = [];
-                                      for (
-                                        int i = 0;
-                                        (minY + i * interval) <=
-                                            calculatedMaxY + interval / 2.0;
-                                        i++
-                                      ) {
-                                        expectedYValues.add(
-                                          minY + i * interval,
-                                        );
-                                      }
-                                      if (!expectedYValues.contains(
-                                        calculatedMaxY,
-                                      )) {
-                                        expectedYValues.add(calculatedMaxY);
-                                      }
-                                      expectedYValues.sort();
-
-                                      const double epsilon = 1.0;
-                                      bool isCloseToGrid = expectedYValues.any(
-                                        (gridValue) =>
-                                            (value - gridValue).abs() < epsilon,
-                                      );
-
-                                      if (isCloseToGrid) {
-                                        return Text(
-                                          NumberFormat.currency(
-                                            locale: 'vi_VN',
-                                            symbol: 'VNĐ',
-                                            decimalDigits: 0,
-                                          ).format(value),
-                                          style: const TextStyle(fontSize: 10),
-                                          textAlign: TextAlign.right,
-                                        );
-                                      }
-                                      return const SizedBox.shrink();
-                                    },
-                              ),
-                            ),
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget: (value, meta) {
-                                  const days = [
-                                    '',
-                                    'Mon',
-                                    'Tue',
-                                    'Wed',
-                                    'Thu',
-                                    'Fri',
-                                    'Sat',
-                                    'Sun',
-                                  ];
-                                  if (value.toInt() >= 1 &&
-                                      value.toInt() <= 7) {
-                                    return Text(
-                                      days[value.toInt()],
-                                      style: const TextStyle(fontSize: 10),
-                                      textAlign: TextAlign.center,
-                                    );
-                                  }
-                                  return const SizedBox.shrink();
-                                },
-                                interval: 1,
-                                reservedSize: 20,
-                              ),
-                            ),
-                            topTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            rightTitles: const AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                          ),
-                          borderData: FlBorderData(
-                            show: true,
-                            border: Border.all(color: Colors.grey, width: 1),
-                          ),
-                          gridData: FlGridData(
-                            show: true,
-                            drawVerticalLine: false,
-                            drawHorizontalLine: true,
-                            horizontalInterval: maxY == 0 ? 1.0 : maxY / 4,
-                            getDrawingHorizontalLine: (value) {
-                              return FlLine(
-                                color: Colors.grey,
-                                strokeWidth: 0.5,
-                              );
-                            },
-                          ),
-                          alignment: BarChartAlignment.spaceAround,
-                          maxY: maxY,
-                          minY: minY,
-                        ),
-                      ),
-                    ),
+                // Display the week range
+                Text(
+                  'Week of ${DateFormat('dd/MM/yyyy').format(selectedDate.subtract(Duration(days: selectedDate.weekday - 1)))} - ${DateFormat('dd/MM/yyyy').format(selectedDate.add(Duration(days: 7 - selectedDate.weekday)))}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 24),
-                // Weekly Transactions List
-                const Text(
-                  'Weekly Transactions',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: weeklyTransactions.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final transaction = weeklyTransactions[index];
-                    return _buildTransactionCard(
-                      transaction,
-                    ); // Use helper method
+                // Calendar Button for Week selection
+                CalendarButton(
+                  selectedDate: selectedDate,
+                  onDateSelected: (date) {
+                    setState(() {
+                      selectedDate = date; // Update selected date
+                    });
                   },
+                  format: CalendarFormat.week, // Set format to week
                 ),
               ],
             ),
           ),
-        ),
-      ],
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Weekly Summary Cards
+                  _buildSummaryCard(
+                    'Weekly Balance',
+                    NumberFormat.currency(
+                      locale: 'vi_VN',
+                      symbol: 'VNĐ',
+                    ).format(weeklyBalance),
+                    weeklyBalance >= 0 ? Colors.green : Colors.red,
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      Expanded(
+                        child: _buildSummaryCard(
+                          'Income',
+                          NumberFormat.currency(
+                            locale: 'vi_VN',
+                            symbol: 'VNĐ',
+                          ).format(totalWeeklyIncome),
+                          Colors.green,
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      Expanded(
+                        child: _buildSummaryCard(
+                          'Expense',
+                          NumberFormat.currency(
+                            locale: 'vi_VN',
+                            symbol: 'VNĐ',
+                          ).format(totalWeeklyExpense),
+                          Colors.red,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  // Weekly Bar Chart
+                  Card(
+                    elevation: 4,
+                    color: const Color(0xFFDFF7E2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: AspectRatio(
+                        aspectRatio: 1.7,
+                        child: BarChart(
+                          BarChartData(
+                            barGroups: barGroups,
+                            titlesData: FlTitlesData(
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 50,
+                                  getTitlesWidget: (double value, TitleMeta meta) {
+                                    final calculatedMaxY = maxY;
+                                    final interval = (calculatedMaxY / 4) > 0
+                                        ? (calculatedMaxY / 4)
+                                        : 1.0;
+
+                                    // Tính toán các mốc giá trị cho đường lưới ngang dựa trên phạm vi trục Y
+                                    // Chúng ta muốn 4 khoảng bằng nhau, tức là 5 mốc (0, interval, 2*interval, 3*interval, 4*interval=maxY)
+                                    List<double> expectedYValues = [];
+                                    for (int i = 0; i <= 4; i++) {
+                                      expectedYValues.add(minY + i * interval);
+                                    }
+
+                                    // Kiểm tra xem giá trị hiện tại có đủ gần với một trong các mốc giá trị dự kiến không
+                                    // Sử dụng một ngưỡng sai số nhỏ để so sánh số thực
+                                    const double epsilon = 1.0; // Ngưỡng sai số
+                                    bool isCloseToGrid = expectedYValues.any(
+                                      (gridValue) =>
+                                          (value - gridValue).abs() < epsilon,
+                                    );
+
+                                    if (isCloseToGrid) {
+                                      return Text(
+                                        value.toStringAsFixed(0),
+                                        style: const TextStyle(fontSize: 10),
+                                        textAlign: TextAlign.right,
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                ),
+                              ),
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    const days = [
+                                      '',
+                                      'Mon',
+                                      'Tue',
+                                      'Wed',
+                                      'Thu',
+                                      'Fri',
+                                      'Sat',
+                                      'Sun',
+                                    ];
+                                    if (value.toInt() >= 1 &&
+                                        value.toInt() <= 7) {
+                                      return Text(
+                                        days[value.toInt()],
+                                        style: const TextStyle(fontSize: 10),
+                                        textAlign: TextAlign.center,
+                                      );
+                                    }
+                                    return const SizedBox.shrink();
+                                  },
+                                  interval: 1,
+                                  reservedSize: 20,
+                                ),
+                              ),
+                              topTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              rightTitles: const AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                            ),
+                            borderData: FlBorderData(
+                              show: true,
+                              border: Border.all(color: Colors.grey, width: 1),
+                            ),
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: false,
+                              drawHorizontalLine: true,
+                              horizontalInterval: maxY == 0 ? 1.0 : maxY / 4,
+                              getDrawingHorizontalLine: (value) {
+                                return FlLine(
+                                  color: Colors.grey,
+                                  strokeWidth: 0.5,
+                                );
+                              },
+                            ),
+                            alignment: BarChartAlignment.spaceAround,
+                            maxY: maxY,
+                            minY: minY,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Weekly Transactions List
+                  const Text(
+                    'Weekly Transactions',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: weeklyTransactions.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final transaction = weeklyTransactions[index];
+                      return _buildTransactionCard(
+                        transaction,
+                      ); // Use helper method
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 

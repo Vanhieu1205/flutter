@@ -63,14 +63,23 @@ class AnalyticsScreen extends StatelessWidget {
     return DefaultTabController(
       length: 4, // Số lượng tab (Ngày, Tuần, Tháng, Năm)
       child: Scaffold(
+        backgroundColor: const Color(
+          0xFF3ACBAB,
+        ), // Set background color to match AppBar
         appBar: AppBar(
           title: const Text('Analysis'), // Tiêu đề của AppBar
           backgroundColor: const Color(0xFF3ACBAB), // Màu nền của AppBar
+          elevation: 0, // Remove the shadow line
           automaticallyImplyLeading: false, // Ẩn nút back trên màn hình chính
           centerTitle: true, // Căn giữa tiêu đề AppBar
           bottom: TabBar(
             // Tùy chỉnh style cho TabBar
-            indicatorColor: Colors.tealAccent, // Màu của thanh indicator
+            indicator: UnderlineTabIndicator(
+              borderSide: BorderSide(color: Color(0xFF3ACBAB)),
+            ), // Remove indicator line
+            indicatorColor: Color(
+              0xFF3ACBAB,
+            ), // Make indicator color transparent to remove potential line
             labelColor: Colors.yellow, // Màu của tab được chọn
             unselectedLabelColor: Colors.black, // Màu của tab chưa được chọn
             tabs: const [
@@ -105,27 +114,50 @@ class AnalyticsScreen extends StatelessWidget {
             final totalBalance = totalIncome - totalExpense;
 
             // Hiển thị nội dung tương ứng với từng tab
-            return TabBarView(
+            return Column(
               children: [
-                // Nội dung tab phân tích theo ngày
-                DailyAnalyticsView(
-                  incomes: incomeViewModel.incomes,
-                  expenses: expenseViewModel.expenses,
-                ),
-                // Nội dung tab phân tích theo tuần
-                WeeklyAnalyticsView(
-                  incomes: incomeViewModel.incomes,
-                  expenses: expenseViewModel.expenses,
-                ),
-                // Nội dung tab phân tích theo tháng
-                MonthlyAnalyticsView(
-                  incomes: incomeViewModel.incomes,
-                  expenses: expenseViewModel.expenses,
-                ),
-                // Nội dung tab phân tích theo năm
-                YearlyAnalyticsView(
-                  incomes: incomeViewModel.incomes,
-                  expenses: expenseViewModel.expenses,
+                // TabBar đã nằm trong AppBar
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors
+                          .white, // Background color for the rounded container
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(
+                          40.0,
+                        ), // Increase radius to match image
+                        topRight: Radius.circular(
+                          40.0,
+                        ), // Increase radius to match image
+                      ),
+                    ),
+                    clipBehavior:
+                        Clip.antiAlias, // Clip content to the rounded corners
+                    child: TabBarView(
+                      children: [
+                        // Nội dung tab phân tích theo ngày
+                        DailyAnalyticsView(
+                          incomes: incomeViewModel.incomes,
+                          expenses: expenseViewModel.expenses,
+                        ),
+                        // Nội dung tab phân tích theo tuần
+                        WeeklyAnalyticsView(
+                          incomes: incomeViewModel.incomes,
+                          expenses: expenseViewModel.expenses,
+                        ),
+                        // Nội dung tab phân tích theo tháng
+                        MonthlyAnalyticsView(
+                          incomes: incomeViewModel.incomes,
+                          expenses: expenseViewModel.expenses,
+                        ),
+                        // Nội dung tab phân tích theo năm
+                        YearlyAnalyticsView(
+                          incomes: incomeViewModel.incomes,
+                          expenses: expenseViewModel.expenses,
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             );

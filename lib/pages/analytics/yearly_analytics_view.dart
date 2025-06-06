@@ -142,292 +142,290 @@ class _YearlyAnalyticsViewState extends State<YearlyAnalyticsView> {
     // minY là 0 vì chỉ hiển thị giá trị dương
     final double minY = 0.0;
 
-    // Tính toán 4 mốc giá trị cho đường lưới ngang dựa trên phạm vi trục Y
-    // Không cần tính các mốc trung gian nếu chỉ hiển thị 4 đường lưới chính
-
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                '${selectedDate.year}',
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              CalendarButton(
-                selectedDate: selectedDate,
-                onDateSelected: (date) {
-                  setState(() {
-                    selectedDate = date;
-                  });
-                },
-                format: CalendarFormat.month,
-              ),
-            ],
-          ),
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white, // Background color for the rounded container
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20.0), // Rounded top-left corner
+          topRight: Radius.circular(20.0), // Rounded top-right corner
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            child: Column(
+      ),
+      clipBehavior: Clip.antiAlias, // Clip content to the rounded corners
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                // Card tổng quan số dư trong năm
-                Card(
-                  margin: const EdgeInsets.only(bottom: 16),
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Yearly Balance', // Số dư trong năm
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(color: Colors.grey[700]),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          '${yearlyBalance.toStringAsFixed(0)} VNĐ',
-                          style: Theme.of(context).textTheme.headlineSmall
-                              ?.copyWith(
-                                color: yearlyBalance >= 0
-                                    ? Colors.green
-                                    : Colors.red,
-                                fontWeight: FontWeight.bold,
-                              ),
-                        ),
-                      ],
-                    ),
+                Text(
+                  '${selectedDate.year}',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 16),
-                // Hàng hiển thị thu nhập và chi tiêu
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Card thu nhập
-                    Expanded(
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Income', // Thu nhập
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(color: Colors.grey[700]),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${totalYearlyIncome.toStringAsFixed(0)} VNĐ',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(
-                                      color: Colors.green,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    // Card chi tiêu
-                    Expanded(
-                      child: Card(
-                        elevation: 4,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(16),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Expense', // Chi tiêu
-                                style: Theme.of(context).textTheme.titleMedium
-                                    ?.copyWith(color: Colors.grey[700]),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${totalYearlyExpense.toStringAsFixed(0)} VNĐ',
-                                style: Theme.of(context).textTheme.titleLarge
-                                    ?.copyWith(
-                                      color: Colors.red,
-                                      fontWeight: FontWeight.bold,
-                                    ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                // Biểu đồ phân tích theo năm
-                Card(
-                  elevation: 4,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: AspectRatio(
-                      aspectRatio: 1.7, // Adjust this ratio as needed
-                      child: BarChart(
-                        BarChartData(
-                          barGroups: barGroups,
-                          titlesData: FlTitlesData(
-                            // Cấu hình trục Y bên trái
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                reservedSize: 50,
-                                getTitlesWidget: (value, meta) {
-                                  // Tính khoảng giá trị cho trục Y
-                                  final calculatedMaxY =
-                                      (totalYearlyIncome > totalYearlyExpense
-                                          ? totalYearlyIncome
-                                          : totalYearlyExpense) *
-                                      1.2;
-                                  // Đảm bảo interval không bằng 0
-                                  final interval = (calculatedMaxY / 4) > 0
-                                      ? (calculatedMaxY / 4)
-                                      : 1.0;
-
-                                  // Danh sách các giá trị trục Y dự kiến nơi có đường lưới
-                                  List<double> expectedYValues = [];
-                                  // Bắt đầu từ minY và thêm các bội số của interval
-                                  for (
-                                    int i = 0;
-                                    (minY + i * interval) <=
-                                        calculatedMaxY + interval / 2.0;
-                                    i++
-                                  ) {
-                                    // Thêm interval/2.0 để bắt các giá trị gần maxY
-                                    expectedYValues.add(minY + i * interval);
-                                  }
-                                  // Đảm bảo maxY cũng được xem xét
-                                  if (!expectedYValues.contains(
-                                    calculatedMaxY,
-                                  )) {
-                                    expectedYValues.add(calculatedMaxY);
-                                  }
-                                  expectedYValues
-                                      .sort(); // Sắp xếp để dễ kiểm tra
-
-                                  // Kiểm tra xem giá trị có đủ gần với bất kỳ giá trị đường lưới dự kiến nào không
-                                  const double epsilon = 1.0; // Ngưỡng sai số
-                                  bool isCloseToGrid = expectedYValues.any(
-                                    (gridValue) =>
-                                        (value - gridValue).abs() < epsilon,
-                                  );
-
-                                  // Hiển thị nhãn nếu giá trị đủ gần với một đường lưới
-                                  if (isCloseToGrid) {
-                                    // Chia thành 4 khoảng từ 0 đến maxY
-                                    return Text(
-                                      value.toStringAsFixed(
-                                        0,
-                                      ), // Định dạng số nguyên
-                                      style: const TextStyle(fontSize: 10),
-                                      textAlign: TextAlign.right, // Căn phải
-                                    );
-                                  }
-                                  return const SizedBox.shrink(); // Sử dụng SizedBox.shrink()
-                                },
-                              ),
-                            ),
-                            // Cấu hình trục X phía dưới
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget: (value, meta) {
-                                  // Hiển thị số tháng
-                                  return Text(
-                                    value.toInt().toString(),
-                                    style: const TextStyle(fontSize: 10),
-                                    textAlign: TextAlign.center,
-                                  );
-                                },
-                                interval: 1,
-                                reservedSize: 20,
-                              ),
-                            ),
-                            // Ẩn trục trên và phải
-                            topTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                            rightTitles: AxisTitles(
-                              sideTitles: SideTitles(showTitles: false),
-                            ),
-                          ),
-
-                          borderData: FlBorderData(
-                            show: true,
-                            border: Border.all(color: Colors.grey, width: 1),
-                          ),
-                          gridData: FlGridData(
-                            show: true,
-                            drawVerticalLine: false,
-                            drawHorizontalLine: true,
-                            horizontalInterval: maxY == 0
-                                ? 1.0
-                                : maxY / 4, // Đảm bảo interval không bằng 0
-                            getDrawingHorizontalLine: (value) {
-                              return FlLine(
-                                color: Colors.grey,
-                                strokeWidth: 0.5,
-                              );
-                            },
-                          ),
-
-                          alignment: BarChartAlignment.spaceAround,
-                          maxY: maxY,
-                          minY: minY, // minY là 0
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-                // Yearly Transactions List
-                const Text(
-                  'Yearly Transactions',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 16),
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: yearlyTransactions.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final transaction = yearlyTransactions[index];
-                    return _buildTransactionCard(transaction);
+                CalendarButton(
+                  selectedDate: selectedDate,
+                  onDateSelected: (date) {
+                    setState(() {
+                      selectedDate = date;
+                    });
                   },
+                  format: CalendarFormat.month,
                 ),
               ],
             ),
           ),
-        ),
-      ],
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  // Card tổng quan số dư trong năm
+                  Card(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    elevation: 4,
+                    color: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Yearly Balance', // Số dư trong năm
+                            style: Theme.of(context).textTheme.titleMedium
+                                ?.copyWith(color: Colors.grey[700]),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '${yearlyBalance.toStringAsFixed(0)} VNĐ',
+                            style: Theme.of(context).textTheme.headlineSmall
+                                ?.copyWith(
+                                  color: yearlyBalance >= 0
+                                      ? Colors.green
+                                      : Colors.red,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  // Hàng hiển thị thu nhập và chi tiêu
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      // Card thu nhập
+                      Expanded(
+                        child: Card(
+                          elevation: 4,
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Income', // Thu nhập
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(color: Colors.grey[700]),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '${totalYearlyIncome.toStringAsFixed(0)} VNĐ',
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        color: Colors.green,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 16),
+                      // Card chi tiêu
+                      Expanded(
+                        child: Card(
+                          elevation: 4,
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Expense', // Chi tiêu
+                                  style: Theme.of(context).textTheme.titleMedium
+                                      ?.copyWith(color: Colors.grey[700]),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  '${totalYearlyExpense.toStringAsFixed(0)} VNĐ',
+                                  style: Theme.of(context).textTheme.titleLarge
+                                      ?.copyWith(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+                  // Biểu đồ phân tích theo năm
+                  Card(
+                    elevation: 4,
+                    color: const Color(0xFFDFF7E2),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: AspectRatio(
+                        aspectRatio: 1.7, // Adjust this ratio as needed
+                        child: BarChart(
+                          BarChartData(
+                            barGroups: barGroups,
+                            titlesData: FlTitlesData(
+                              // Cấu hình trục Y bên trái
+                              leftTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  reservedSize: 50,
+                                  getTitlesWidget: (value, meta) {
+                                    // Tính khoảng giá trị cho trục Y
+                                    final calculatedMaxY =
+                                        (totalYearlyIncome > totalYearlyExpense
+                                            ? totalYearlyIncome
+                                            : totalYearlyExpense) *
+                                        1.2;
+                                    // Đảm bảo interval không bằng 0
+                                    final interval = (calculatedMaxY / 4) > 0
+                                        ? (calculatedMaxY / 4)
+                                        : 1.0;
+
+                                    // Tính toán các mốc giá trị cho đường lưới ngang dựa trên phạm vi trục Y
+                                    // Chúng ta muốn 4 khoảng bằng nhau, tức là 5 mốc (0, interval, 2*interval, 3*interval, 4*interval=maxY)
+                                    List<double> expectedYValues = [];
+                                    for (int i = 0; i <= 4; i++) {
+                                      expectedYValues.add(minY + i * interval);
+                                    }
+
+                                    // Kiểm tra xem giá trị có đủ gần với bất kỳ giá trị đường lưới dự kiến nào không
+                                    // Sử dụng một ngưỡng sai số nhỏ để so sánh số thực
+                                    const double epsilon = 1.0; // Ngưỡng sai số
+                                    bool isCloseToGrid = expectedYValues.any(
+                                      (gridValue) =>
+                                          (value - gridValue).abs() < epsilon,
+                                    );
+
+                                    // Hiển thị nhãn nếu giá trị đủ gần với một đường lưới
+                                    if (isCloseToGrid) {
+                                      // Chia thành 4 khoảng từ 0 đến maxY
+                                      return Text(
+                                        value.toStringAsFixed(
+                                          0,
+                                        ), // Định dạng số nguyên
+                                        style: const TextStyle(fontSize: 10),
+                                        textAlign: TextAlign.right, // Căn phải
+                                      );
+                                    }
+                                    return const SizedBox.shrink(); // Sử dụng SizedBox.shrink()
+                                  },
+                                ),
+                              ),
+                              // Cấu hình trục X phía dưới
+                              bottomTitles: AxisTitles(
+                                sideTitles: SideTitles(
+                                  showTitles: true,
+                                  getTitlesWidget: (value, meta) {
+                                    // Hiển thị số tháng
+                                    return Text(
+                                      value.toInt().toString(),
+                                      style: const TextStyle(fontSize: 10),
+                                      textAlign: TextAlign.center,
+                                    );
+                                  },
+                                  interval: 1,
+                                  reservedSize: 20,
+                                ),
+                              ),
+                              // Ẩn trục trên và phải
+                              topTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                              rightTitles: AxisTitles(
+                                sideTitles: SideTitles(showTitles: false),
+                              ),
+                            ),
+
+                            borderData: FlBorderData(
+                              show: true,
+                              border: Border.all(color: Colors.grey, width: 1),
+                            ),
+                            gridData: FlGridData(
+                              show: true,
+                              drawVerticalLine: false,
+                              drawHorizontalLine: true,
+                              horizontalInterval: maxY == 0
+                                  ? 1.0
+                                  : maxY / 4, // Đảm bảo interval không bằng 0
+                              getDrawingHorizontalLine: (value) {
+                                return FlLine(
+                                  color: Colors.grey,
+                                  strokeWidth: 0.5,
+                                );
+                              },
+                            ),
+
+                            alignment: BarChartAlignment.spaceAround,
+                            maxY: maxY,
+                            minY: minY, // minY là 0
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+                  // Yearly Transactions List
+                  const Text(
+                    'Yearly Transactions',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 16),
+                  ListView.separated(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: yearlyTransactions.length,
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 12),
+                    itemBuilder: (context, index) {
+                      final transaction = yearlyTransactions[index];
+                      return _buildTransactionCard(transaction);
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
