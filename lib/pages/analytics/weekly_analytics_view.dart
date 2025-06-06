@@ -169,6 +169,9 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
     // minY is 0 as we are only showing positive values
     final minY = 0.0;
 
+    // Calculate interval for approximately 4 intervals (5 labels including 0 and maxY)
+    final interval = (maxY / 4) > 0 ? (maxY / 4) : 1.0;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white, // Background color for the rounded container
@@ -266,35 +269,22 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                                 sideTitles: SideTitles(
                                   showTitles: true,
                                   reservedSize: 50,
+                                  interval: interval,
                                   getTitlesWidget: (double value, TitleMeta meta) {
-                                    final calculatedMaxY = maxY;
-                                    final interval = (calculatedMaxY / 4) > 0
-                                        ? (calculatedMaxY / 4)
-                                        : 1.0;
-
-                                    // Tính toán các mốc giá trị cho đường lưới ngang dựa trên phạm vi trục Y
-                                    // Chúng ta muốn 4 khoảng bằng nhau, tức là 5 mốc (0, interval, 2*interval, 3*interval, 4*interval=maxY)
-                                    List<double> expectedYValues = [];
-                                    for (int i = 0; i <= 4; i++) {
-                                      expectedYValues.add(minY + i * interval);
-                                    }
-
-                                    // Kiểm tra xem giá trị hiện tại có đủ gần với một trong các mốc giá trị dự kiến không
-                                    // Sử dụng một ngưỡng sai số nhỏ để so sánh số thực
-                                    const double epsilon = 1.0; // Ngưỡng sai số
-                                    bool isCloseToGrid = expectedYValues.any(
-                                      (gridValue) =>
-                                          (value - gridValue).abs() < epsilon,
+                                    // Format the value with thousand separators
+                                    final formatter = NumberFormat(
+                                      '#,###',
+                                      'vi_VN',
                                     );
 
-                                    if (isCloseToGrid) {
-                                      return Text(
-                                        value.toStringAsFixed(0),
-                                        style: const TextStyle(fontSize: 10),
-                                        textAlign: TextAlign.right,
-                                      );
-                                    }
-                                    return const SizedBox.shrink();
+                                    // Simply return the formatted text widget for the value provided by the library
+                                    return Text(
+                                      formatter.format(value),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 10,
+                                      ),
+                                    );
                                   },
                                 ),
                               ),
@@ -341,7 +331,7 @@ class _WeeklyAnalyticsViewState extends State<WeeklyAnalyticsView> {
                               show: true,
                               drawVerticalLine: false,
                               drawHorizontalLine: true,
-                              horizontalInterval: maxY == 0 ? 1.0 : maxY / 4,
+                              horizontalInterval: interval,
                               getDrawingHorizontalLine: (value) {
                                 return FlLine(
                                   color: Colors.grey,

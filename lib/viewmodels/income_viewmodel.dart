@@ -40,7 +40,7 @@ class IncomeViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _firebaseService.addIncome(userId!, income);
+      await _firebaseService.addIncome(userId!, income);  
       _incomes.add(income);
       _error = null;
     } catch (e) {

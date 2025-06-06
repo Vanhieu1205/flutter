@@ -135,14 +135,17 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
     // Tính số dư trong tháng
     final monthlyBalance = totalMonthlyIncome - totalMonthlyExpense;
 
-    // Tính toán giá trị lớn nhất cho trục Y (chỉ cần xem xét giá trị dương)
-    final double maxY =
+    final minY = 0.0;
+
+    // Calculate maxY
+    final maxY =
         (totalMonthlyIncome > totalMonthlyExpense
             ? totalMonthlyIncome
             : totalMonthlyExpense) *
         1.2;
-    // minY là 0 vì chỉ hiển thị giá trị dương
-    final double minY = 0.0;
+
+    // Calculate interval for approximately 4 intervals (5 labels including 0 and maxY)
+    final interval = (maxY / 4) > 0 ? (maxY / 4) : 1.0;
 
     return Container(
       decoration: BoxDecoration(
@@ -308,45 +311,23 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
                                 sideTitles: SideTitles(
                                   showTitles: true,
                                   reservedSize: 50,
+                                  // Use the calculated interval to define label positions
+                                  interval: interval,
                                   getTitlesWidget: (value, meta) {
-                                    // Tính toán maxY, minY và interval
-                                    final calculatedMaxY =
-                                        (totalMonthlyIncome >
-                                                totalMonthlyExpense
-                                            ? totalMonthlyIncome
-                                            : totalMonthlyExpense) *
-                                        1.2;
-                                    // Đảm bảo interval không bằng 0 để tránh lỗi chia cho 0
-                                    final interval = (calculatedMaxY / 4) > 0
-                                        ? (calculatedMaxY / 4)
-                                        : 1.0;
-
-                                    // Tính toán các mốc giá trị cho đường lưới ngang dựa trên phạm vi trục Y
-                                    // Chúng ta muốn 4 khoảng bằng nhau, tức là 5 mốc (0, interval, 2*interval, 3*interval, 4*interval=maxY)
-                                    List<double> expectedYValues = [];
-                                    for (int i = 0; i <= 4; i++) {
-                                      expectedYValues.add(minY + i * interval);
-                                    }
-
-                                    // Kiểm tra xem giá trị có đủ gần với bất kỳ giá trị đường lưới dự kiến nào không
-                                    // Sử dụng một ngưỡng sai số nhỏ để so sánh số thực
-                                    const double epsilon = 1.0; // Ngưỡng sai số
-                                    bool isCloseToGrid = expectedYValues.any(
-                                      (gridValue) =>
-                                          (value - gridValue).abs() < epsilon,
+                                    // Format the value with thousand separators
+                                    final formatter = NumberFormat(
+                                      '#,###',
+                                      'vi_VN',
                                     );
 
-                                    // Hiển thị nhãn nếu giá trị đủ gần với một đường lưới
-                                    if (isCloseToGrid) {
-                                      return Text(
-                                        value.toStringAsFixed(
-                                          0,
-                                        ), // Định dạng số nguyên
-                                        style: const TextStyle(fontSize: 10),
-                                        textAlign: TextAlign.right, // Căn phải
-                                      );
-                                    }
-                                    return const SizedBox.shrink(); // Sử dụng SizedBox.shrink()
+                                    // Simply return the formatted text widget for the value provided by the library
+                                    return Text(
+                                      formatter.format(value),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 10,
+                                      ),
+                                    );
                                   },
                                 ),
                               ),
@@ -383,9 +364,8 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
                               show: true,
                               drawVerticalLine: false,
                               drawHorizontalLine: true,
-                              horizontalInterval: maxY == 0
-                                  ? 1.0
-                                  : maxY / 4, // Đảm bảo interval không bằng 0
+                              horizontalInterval:
+                                  interval, // Use the calculated interval here as well
                               getDrawingHorizontalLine: (value) {
                                 return FlLine(
                                   color: Colors.grey,
@@ -395,7 +375,7 @@ class _MonthlyAnalyticsViewState extends State<MonthlyAnalyticsView> {
                             ),
                             alignment: BarChartAlignment.spaceAround,
                             maxY: maxY,
-                            minY: minY, // minY là 0
+                            minY: minY,
                           ),
                         ),
                       ),

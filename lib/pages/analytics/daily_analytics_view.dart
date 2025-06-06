@@ -5,6 +5,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:table_calendar/table_calendar.dart';
 import 'analytics_screen.dart';
 import 'package:intl/intl.dart';
+import 'dart:math';
 
 // Widget hiển thị phân tích theo ngày
 class DailyAnalyticsView extends StatefulWidget {
@@ -124,9 +125,8 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
         1.2;
     final minY = 0.0;
 
-    // Calculate horizontal interval for approximately 4 grid lines
-    final interval = maxY / 4;
-    final horizontalInterval = interval == 0 ? 10.0 : interval;
+    // Calculate interval for approximately 4 intervals (5 labels including 0 and maxY)
+    final interval = (maxY / 4) > 0 ? (maxY / 4) : 1.0;
 
     return Container(
       decoration: BoxDecoration(
@@ -291,44 +291,23 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                                 sideTitles: SideTitles(
                                   showTitles: true,
                                   reservedSize: 50,
+                                  // Use the calculated interval to define label positions
+                                  interval: interval,
                                   getTitlesWidget: (double value, TitleMeta meta) {
-                                    // Tính toán maxY, minY và interval
-                                    final calculatedMaxY =
-                                        (totalDailyIncome > totalDailyExpense
-                                            ? totalDailyIncome
-                                            : totalDailyExpense) *
-                                        1.2;
-                                    // Đảm bảo interval không bằng 0 để tránh lỗi chia cho 0
-                                    final interval = (calculatedMaxY / 4) > 0
-                                        ? (calculatedMaxY / 4)
-                                        : 1.0;
-
-                                    // Tính toán các mốc giá trị cho đường lưới ngang dựa trên phạm vi trục Y
-                                    // Chúng ta muốn 4 khoảng bằng nhau, tức là 5 mốc (0, interval, 2*interval, 3*interval, 4*interval=maxY)
-                                    List<double> expectedYValues = [];
-                                    for (int i = 0; i <= 4; i++) {
-                                      expectedYValues.add(minY + i * interval);
-                                    }
-
-                                    // Kiểm tra xem giá trị hiện tại có đủ gần với một trong các mốc giá trị dự kiến không
-                                    // Sử dụng một ngưỡng sai số nhỏ để so sánh số thực
-                                    const double epsilon = 1.0; // Ngưỡng sai số
-                                    bool isCloseToGrid = expectedYValues.any(
-                                      (gridValue) =>
-                                          (value - gridValue).abs() < epsilon,
+                                    // Format the value with thousand separators
+                                    final formatter = NumberFormat(
+                                      '#,###',
+                                      'vi_VN',
                                     );
 
-                                    // Hiển thị nhãn nếu giá trị đủ gần với một đường lưới
-                                    if (isCloseToGrid) {
-                                      return Text(
-                                        value.toStringAsFixed(
-                                          0,
-                                        ), // Định dạng số nguyên
-                                        style: const TextStyle(fontSize: 10),
-                                        textAlign: TextAlign.right, // Căn phải
-                                      );
-                                    }
-                                    return const SizedBox.shrink(); // Sử dụng SizedBox.shrink()
+                                    // Simply return the formatted text widget for the value provided by the library
+                                    return Text(
+                                      formatter.format(value),
+                                      style: const TextStyle(
+                                        color: Colors.black,
+                                        fontSize: 10,
+                                      ),
+                                    );
                                   },
                                 ),
                               ),
@@ -368,9 +347,8 @@ class _DailyAnalyticsViewState extends State<DailyAnalyticsView> {
                               show: true,
                               drawVerticalLine: false,
                               drawHorizontalLine: true,
-                              horizontalInterval: maxY == 0
-                                  ? 1.0
-                                  : maxY / 4, // Đảm bảo interval không bằng 0
+                              horizontalInterval:
+                                  interval, // Use the calculated interval here as well
                               getDrawingHorizontalLine: (value) {
                                 return FlLine(
                                   color: Colors.grey,
